@@ -38,7 +38,7 @@ namespace A_star{
     }
 
     c_color get_color(double x, double y){
-        auto data = base.get_pixel(x/dp, y/dp);
+        auto data = Public::base.get_pixel(x/Public::pixel_adj, y/Public::pixel_adj);
         return c_color{int(data[0]),int(data[1]),int(data[2])};
     }
 
@@ -56,20 +56,27 @@ namespace A_star{
         return result;
     }
 
-    void a_star_search(path_container* path, c_point pst, c_point ptr, double cell_wide){
+    double a_star_search(path_container& path, c_point pst, c_point ptr, double cell_wide){
+
+        pst.x *= Public::pixel_adj;
+        pst.y *= Public::pixel_adj;
+        ptr.x *= Public::pixel_adj;
+        ptr.y *= Public::pixel_adj;
+
             
         std::set<c_point_comp> open;
         std::set<c_point_comp> close;
         open.insert(c_point_comp{pst, pst, 0});
         auto center_ptr = open.begin();
         c_point center;
+        double cost;
 
         int step = 0;
 
         while((step++)<max_step){
             center_ptr = open.begin();
             
-            double cost = -1; 
+            cost = -1; 
             for(auto it = open.begin(); it != open.end(); it++){
                 double cmcost = it->cost;
                 if(cost == -1 or cost > cmcost){
@@ -87,12 +94,13 @@ namespace A_star{
                 if(cmp->cost > cost){
                     close.erase(cmp);
                     close.insert(*center_ptr);
+                    cost = cmp->cost;
                 }
             }
 
             open.erase(*center_ptr);
 
-            if(euc(center, ptr)<=cell_wide){
+            if(euc(center, ptr) <= cell_wide){
                 break;
             }
 
@@ -108,7 +116,11 @@ namespace A_star{
             };
 
             for(int i=0;i<8;i++){
-                if(ops[i].x < 0 or ops[i].x >=base.w()*dp or ops[i].y < 0 or ops[i].y >=base.h()*dp or get_color(ops[i]).b > 250) continue;
+                if(ops[i].x < 0
+                    or ops[i].x >= Public::base.w()
+                    or ops[i].y < 0
+                    or ops[i].y >= Public::base.h()
+                    or get_color(ops[i]).b > 250) continue;
                 c_point_comp cops = c_point_comp{center, ops[i], get_cost(ops[i], ptr, center)+cost};
                 if(close.find(cops) == close.end()){
                     open.insert(cops);
@@ -117,17 +129,19 @@ namespace A_star{
 
         }
 
-        if(path != NULL){
-            auto pathmark = close.find({{0,0},center,0});
-            if(pathmark == close.end())return;
+        auto pathmark = close.find({{0,0},center,0});
+        if(pathmark == close.end())return -1;
 
-            (*path).push_back({});
-
-            while(pathmark->point.x != pst.x or pathmark->point.y != pst.y){
-                (*path)[path->size()-1].push_back(pathmark->point);
-                (*path)[path->size()-1].push_back(pathmark->parent);
-                pathmark = close.find({pathmark->parent,pathmark->parent,0});
-            }
+        path.push_back({});
+        
+        while(!(pathmark->point == pst) ){
+            path[path.size()-1].push_back(pathmark->point);
+            pathmark = close.find({pathmark->parent,pathmark->parent,0});
         }
+        
+        path[path.size()-1].push_back(pathmark->point);
+
+        return cost;
+
     }
 }

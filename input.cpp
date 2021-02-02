@@ -1,3 +1,3 @@
 void bpress(uint button, uint x, uint y){
-    if(button == 1) std::cout<<"cursor is at ["<<x<<":"<<y<<"]"<<std::endl;
+    std::cout<<int(x/Public::pixel_adj)<<","<<int(y/Public::pixel_adj)<<","<<button<<std::endl;
 }
