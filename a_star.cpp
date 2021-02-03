@@ -2,7 +2,7 @@
 
 namespace A_star{
 
-    const int max_step = 50000;
+    
 
     struct c_point{
         double x = 0,y = 0;
@@ -50,9 +50,11 @@ namespace A_star{
         return std::sqrt(std::pow(pfrom.x-pto.x,2)+std::pow(pfrom.y-pto.y,2));
     }
 
-    double get_cost(c_point pfrom, c_point pto, c_point _parent){
-        double dist = std::abs(get_color(pfrom).g-get_color(pto).g);
-        double result = (1+dist)*(std::max(std::abs(pfrom.x-pto.x), std::abs(pfrom.y-pto.y))*std::pow(euc(pfrom,_parent),0.5));
+    double get_cost(c_point pfrom, c_point pto, c_point _parent, double cell_wide){
+        double cdist = get_color(pfrom).g-get_color(pto).g;
+        double dist = cell_wide*std::abs(cdist)*(cdist < 0 ? Public::height_diff_weight_up : Public::height_diff_weight_down);
+        //double result = (1+dist)*(std::max(std::abs(pfrom.x-pto.x), std::abs(pfrom.y-pto.y))*std::pow(euc(pfrom,_parent),0.5));
+        double result = (euc(pfrom,pto)+dist)*(std::max(std::abs(pfrom.x-pto.x), std::abs(pfrom.y-pto.y))*euc(pfrom,_parent));
         return result;
     }
 
@@ -73,7 +75,7 @@ namespace A_star{
 
         int step = 0;
 
-        while((step++)<max_step){
+        while((step++)<Public::max_step){
             center_ptr = open.begin();
             
             cost = -1; 
@@ -120,8 +122,8 @@ namespace A_star{
                     or ops[i].x >= Public::base.w()
                     or ops[i].y < 0
                     or ops[i].y >= Public::base.h()
-                    or get_color(ops[i]).b > 250) continue;
-                c_point_comp cops = c_point_comp{center, ops[i], get_cost(ops[i], ptr, center)+cost};
+                    or get_color(ops[i]).r+get_color(ops[i]).g+get_color(ops[i]).b == 255*3) continue;
+                c_point_comp cops = c_point_comp{center, ops[i], get_cost(ops[i], ptr, center, cell_wide)+cost};
                 if(close.find(cops) == close.end()){
                     open.insert(cops);
                 }

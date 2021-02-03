@@ -12,7 +12,7 @@ namespace Dbscan{
     void cluster(r_tree& rdata, Public::city_info_cont& data, int core, int core_class_num){
 
         if(data[core].class_num != -1) return;
-        const double distance = Public::hundred_km_to_pixel*Public::city_range_size*std::sqrt(data[core].population)*0.001;
+        const double distance = 2*Public::hundred_km_to_pixel*Public::city_range_size*std::sqrt(data[core].population)*0.001;
 
         const double
             rmin[2]= {data[core].x-distance, data[core].y-distance},
@@ -22,7 +22,7 @@ namespace Dbscan{
 
         std::function<bool(const int&)> func = 
             [&](const int num){
-                if((data[num].x-data[core].x)*(data[num].x-data[core].x)+(data[num].y-data[core].y)*(data[num].y-data[core].y) < distance*distance)
+                if((data[num].x-data[core].x)*(data[num].x-data[core].x)+(data[num].y-data[core].y)*(data[num].y-data[core].y) <= distance*distance)
                     list.push_back(num);
                 return true;
             };

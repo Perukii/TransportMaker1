@@ -50,7 +50,7 @@ void func(Capr::Cairo_cont cr){
         cr->rectangle(Public::city_points[i].x*Public::pixel_adj-mark_size/2, Public::city_points[i].y*Public::pixel_adj-mark_size/2, mark_size, mark_size);
         cr->fill_preserve();
 
-        cr->set_line_width(city_class(Public::city_points[i].population));
+        cr->set_line_width(city_class(Public::city_points[i].population)+1);
         cr->set_source_rgb(cset[cset_ad].r*stroke_color,cset[cset_ad].g*stroke_color,cset[cset_ad].b*stroke_color);
         cr->stroke();
     }
@@ -65,7 +65,7 @@ void func(Capr::Cairo_cont cr){
     }
 
     cr->set_line_width(1);
-    cr->set_source_rgb(0.2,0.2,0.2);
+    cr->set_source_rgb(1.0,0.2,0.2);
     cr->stroke();
 
 

@@ -11,29 +11,38 @@ A_star::path_container path_cont;
 #include "draw.cpp"
 
 
+A_star::c_point get_city_location(const char* tar){
+    for(int i=0;i<Public::city_points.size();i++){
+        if(Public::city_points[i].name == tar)return A_star::c_point{Public::city_points[i].x,Public::city_points[i].y};
+    }
+    return A_star::c_point{0,0};
+}
+
 int main(){
     
-    const char* map_name = "resources/Map1.png";
+    const char* map_name = "resources/Hokkaido_0.png";
     Public::base.open_file(map_name);
-
-    Public::city_points.push_back({"city0", 585, 1162, 1'000'000, -1});
-    Public::city_points.push_back({"city1", 552, 1120, 300'000  , -1}); 
-    Public::city_points.push_back({"city2", 642, 325 , 50'000   , -1}); 
-    Public::city_points.push_back({"city3", 1335,850 , 700'000  , -1}); 
-    Public::city_points.push_back({"city4", 982, 1205, 120'000  , -1}); 
-
     Dbscan::r_tree rdata;
+
+    Public::city_points.push_back({"Sapporo"  ,2160 ,2720 ,1'958'408, -1});
+    Public::city_points.push_back({"Ebetsu"   ,2270 ,2700 ,119'409 , -1});
+    Public::city_points.push_back({"Otaru"    ,1920 ,2640 ,113'728 , -1});
+    Public::city_points.push_back({"Tomakomai",2320 ,3130 ,170'555 , -1});
+    Public::city_points.push_back({"Obihiro"  ,3490 ,2870 ,165'384 , -1});
+    Public::city_points.push_back({"Kushiro"  ,4380 ,2800 ,166'573 , -1});
+    Public::city_points.push_back({"Asahikawa",2890 ,2050 ,332'610 , -1});
 
     for(int i=0; i<Public::city_points.size(); i++){
         const double pa[2]={Public::city_points[i].x, Public::city_points[i].y};
         rdata.Insert(pa, pa, i);
     }
-
     for(int i=0; i<Public::city_points.size(); i++){
         Dbscan::cluster(rdata, Public::city_points, i, -1);
     }
+    std::cout<<A_star::a_star_search(path_cont, get_city_location("Sapporo"), get_city_location("Asahikawa"), 1.0)<<std::endl;
+    std::cout<<A_star::a_star_search(path_cont, get_city_location("Asahikawa"), get_city_location("Obihiro"), 1.0)<<std::endl;
     
-    std::cout<<A_star::a_star_search(path_cont, A_star::c_point{642,325}, A_star::c_point{1335,850}, 10)<<std::endl;
+
 
     Public::picker.set_default_size(Public::base.w()*Public::pixel_adj, Public::base.h()*Public::pixel_adj);
     Public::picker.set_loop(0);
