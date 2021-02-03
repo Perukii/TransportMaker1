@@ -1,21 +1,34 @@
 #include "cairo_picker/src/cairo_picker.hpp"
 #include <iostream>
-#include <cmath>
+#include <vector>
+
+#define DATA_READER_MODE_STRING
+
+#include "DataReader/data_reader.cpp"
 #include "public.cpp"
 #include "input.cpp"
 #include "a_star.cpp"
 #include "dbscan.cpp"
+#include "utility.cpp"
 
 A_star::path_container path_cont;
 
 #include "draw.cpp"
 
-
-A_star::c_point get_city_location(const char* tar){
-    for(int i=0;i<Public::city_points.size();i++){
-        if(Public::city_points[i].name == tar)return A_star::c_point{Public::city_points[i].x,Public::city_points[i].y};
+void prepare_data(){
+    
+    const char * file = "resources/Hokkaido_0.txt";
+    Data_reader::data_container data_cont;
+    Data_reader::read_data(data_cont, file);
+    
+    for(auto it:data_cont){
+        std::cout<<it[0]<<";"<<std::endl;
+        Public::city_points.push_back({
+            it[0].c_str(),
+            Data_reader::string_to_double(it[1]),
+            Data_reader::string_to_double(it[2]),
+            Data_reader::string_to_double(it[3]), -1});
     }
-    return A_star::c_point{0,0};
 }
 
 int main(){
@@ -23,14 +36,7 @@ int main(){
     const char* map_name = "resources/Hokkaido_0.png";
     Public::base.open_file(map_name);
     Dbscan::r_tree rdata;
-
-    Public::city_points.push_back({"Sapporo"  ,2160 ,2720 ,1'958'408, -1});
-    Public::city_points.push_back({"Ebetsu"   ,2270 ,2700 ,119'409 , -1});
-    Public::city_points.push_back({"Otaru"    ,1920 ,2640 ,113'728 , -1});
-    Public::city_points.push_back({"Tomakomai",2320 ,3130 ,170'555 , -1});
-    Public::city_points.push_back({"Obihiro"  ,3490 ,2870 ,165'384 , -1});
-    Public::city_points.push_back({"Kushiro"  ,4380 ,2800 ,166'573 , -1});
-    Public::city_points.push_back({"Asahikawa",2890 ,2050 ,332'610 , -1});
+    prepare_data();
 
     for(int i=0; i<Public::city_points.size(); i++){
         const double pa[2]={Public::city_points[i].x, Public::city_points[i].y};

@@ -13,7 +13,7 @@ namespace Public{
     
 
     struct city_info{
-        const char* name;
+        std::string name;
         double x;
         double y;
         double population;
