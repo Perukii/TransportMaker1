@@ -22,7 +22,6 @@ void prepare_data(){
     Data_reader::read_data(data_cont, file);
     
     for(auto it:data_cont){
-        std::cout<<it[0]<<";"<<std::endl;
         Public::city_points.push_back({
             it[0].c_str(),
             Data_reader::string_to_double(it[1]),
@@ -47,7 +46,7 @@ int main(){
     }
     std::cout<<A_star::a_star_search(path_cont, get_city_location("Sapporo"), get_city_location("Asahikawa"), 1.0)<<std::endl;
     std::cout<<A_star::a_star_search(path_cont, get_city_location("Asahikawa"), get_city_location("Obihiro"), 1.0)<<std::endl;
-    
+    std::cout<<A_star::a_star_search(path_cont, get_city_location("Sapporo"), get_city_location("Hakodate"), 2.0)<<std::endl;
 
 
     Public::picker.set_default_size(Public::base.w()*Public::pixel_adj, Public::base.h()*Public::pixel_adj);
