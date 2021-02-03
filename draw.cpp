@@ -1,3 +1,6 @@
+
+#include <random>
+
 int city_class(int population){
     if(population >= 1'000'000) return 2;
     else if(population >= 300'000) return 1;
@@ -25,25 +28,26 @@ void func(Capr::Cairo_cont cr){
     const double mark_size_base = 5;
 
     struct color{double r,g,b;};
+    color cset[] = {{0.5,0.5,0.5},{1.0, 0.5, 0.5}};
 
-    const color cset[]={
-        {1.0,0.5,0.5},
-        {0.5,1.0,0.5},
-        {0.5,0.5,1.0},
-        {0.8,0.8,0.3},
-        {0.8,0.3,0.8},
-        {0.3,0.8,0.8}
-    };
+    std::set<int> found_class;
+    for(int i=0;i<Public::city_points.size();i++){
+        if(std::pow(Public::cursor_info.x/Public::pixel_adj-Public::city_points[i].x,2)+
+            std::pow(Public::cursor_info.y/Public::pixel_adj-Public::city_points[i].y,2)
+            <= std::pow(Public::city_range_f(Public::city_points[i].population),2)){
+                found_class.insert(Public::city_points[i].class_num);
+        }
+    }
 
     for(int i=0;i<Public::city_points.size();i++){
-        const int cset_ad = Public::city_points[i].class_num%(sizeof(cset)/sizeof(color));
+        const int cset_ad = found_class.find(Public::city_points[i].class_num) != found_class.end();
         const double stroke_color = 0.3;
-        const double pp_log = std::log(Public::city_points[i].population)/std::log(10'000);
-        const double mark_size = mark_size_base*pp_log;
-        const double range_size = Public::hundred_km_to_pixel*Public::pixel_adj*Public::city_range_size*std::sqrt(Public::city_points[i].population)*0.001;
+        const double pp_log = Public::city_range_f(Public::city_points[i].population);
+        const double mark_size = mark_size_base*Public::city_scale_f(Public::city_points[i].population);
+        const double range_size = Public::pixel_adj*pp_log;
 
         cr->set_source_rgba(cset[cset_ad].r,cset[cset_ad].g,cset[cset_ad].b, 0.5);
-        cr->arc(Public::city_points[i].x*Public::pixel_adj, Public::city_points[i].y*Public::pixel_adj, range_size/2, 0, 2*M_PI);
+        cr->arc(Public::city_points[i].x*Public::pixel_adj, Public::city_points[i].y*Public::pixel_adj, range_size, 0, 2*M_PI);
         cr->fill();
 
         cr->set_source_rgb(cset[cset_ad].r,cset[cset_ad].g,cset[cset_ad].b);
@@ -58,9 +62,9 @@ void func(Capr::Cairo_cont cr){
 
 
     for(int i=0;i<path_cont.size();i++){
-        cr->move_to(path_cont[i][0].x,path_cont[i][0].y);
+        cr->move_to(path_cont[i][0].x*Public::pixel_adj,path_cont[i][0].y*Public::pixel_adj);
         for(int j=1;j<path_cont[i].size();j++){
-            cr->line_to(path_cont[i][j].x,path_cont[i][j].y);
+            cr->line_to(path_cont[i][j].x*Public::pixel_adj,path_cont[i][j].y*Public::pixel_adj);
         }
     }
 

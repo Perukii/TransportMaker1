@@ -2,13 +2,21 @@ namespace Public{
     Capr::C_picker picker;
     Capr::Function::C_picture base;
     const double pixel_adj = 0.2;
-    const int max_step = 50000;
+    const int max_step = 100000;
 
     const double hundred_km_to_pixel = 900; 
-    const double city_range_size = 0.20; // 1.0 -> 100km
-    const double height_diff_weight_up = 2.5;
-    const double height_diff_weight_down = 1.0;
-    //const double height_weight = 1.0;
+    const double city_range_size = 0.10; // 1.0 -> 100km
+    const double height_diff_weight_up = 4.5;
+    const double height_diff_weight_down = 4.5;
+    const double height_weight = 1.0;
+    const double city_pass_weight = 3.0;
+
+    double city_scale_f(double population){
+        return std::log(population)/std::log(10'000);
+    }
+    double city_range_f(double population){
+        return city_scale_f(population)*city_range_size*hundred_km_to_pixel;
+    }
     //const double length_weight = 1.0;
     
 
@@ -18,13 +26,19 @@ namespace Public{
         double y;
         double population;
         int class_num = -1;
-
     };
 
+    struct cursor{
+        double x,y;
+    };
+
+    cursor cursor_info;
+    double max_city_range;
+
     using city_info_cont = std::vector<city_info>;
+    using r_tree = RTree<int, double, 2, double>;
 
     city_info_cont city_points;
-
-
+    r_tree rdata;
     
 }

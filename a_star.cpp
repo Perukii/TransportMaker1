@@ -38,7 +38,7 @@ namespace A_star{
     }
 
     c_color get_color(double x, double y){
-        auto data = Public::base.get_pixel(x/Public::pixel_adj, y/Public::pixel_adj);
+        auto data = Public::base.get_pixel(x, y);
         return c_color{int(data[0]),int(data[1]),int(data[2])};
     }
 
@@ -50,21 +50,32 @@ namespace A_star{
         return std::sqrt(std::pow(pfrom.x-pto.x,2)+std::pow(pfrom.y-pto.y,2));
     }
 
-    double get_cost(c_point pfrom, c_point pto, c_point _parent, double cell_wide){
+    double get_cost(c_point pfrom, c_point pto, c_point pfor, double cell_wide){
         double cdist = get_color(pfrom).g-get_color(pto).g;
-        double dist = cell_wide*std::abs(cdist)*(cdist < 0 ? Public::height_diff_weight_up : Public::height_diff_weight_down);
-        //double result = (1+dist)*(std::max(std::abs(pfrom.x-pto.x), std::abs(pfrom.y-pto.y))*std::pow(euc(pfrom,_parent),0.5));
-        double result = (euc(pfrom,pto)+dist)*(std::max(std::abs(pfrom.x-pto.x), std::abs(pfrom.y-pto.y))*euc(pfrom,_parent));
-        return result;
+        double dist = std::abs(cdist)*(cdist < 0 ? Public::height_diff_weight_up : Public::height_diff_weight_down);
+
+
+        double city_pass = 1.0;
+
+        if(Public::city_pass_weight != 0.0){
+            std::vector<int> close_city_list;
+            Dbscan::rtree_search(Public::rdata, Public::city_points, pto.x, pto.y, close_city_list, Public::max_city_range*4);
+            for(auto it:close_city_list){
+
+                double city_pass_p = 
+                    euc(pto, c_point{Public::city_points[it].x, Public::city_points[it].y})
+                    /Public::city_range_f(Public::city_points[it].population);
+                if(city_pass_p < 1) city_pass *= city_pass_p;
+            }
+        }
+        
+
+
+        double result = (1.0+dist+(1.0-get_color(pto).g/255.0)*Public::height_weight+(city_pass*Public::city_pass_weight))*euc(pfrom,pto)*euc(pfrom,pfor);
+        return result*cell_wide;
     }
 
     double a_star_search(path_container& path, c_point pst, c_point ptr, double cell_wide){
-
-        pst.x *= Public::pixel_adj;
-        pst.y *= Public::pixel_adj;
-        ptr.x *= Public::pixel_adj;
-        ptr.y *= Public::pixel_adj;
-
             
         std::set<c_point_comp> open;
         std::set<c_point_comp> close;
@@ -106,6 +117,7 @@ namespace A_star{
                 break;
             }
 
+
             c_point ops[]={
                 c_point{center.x,center.y+cell_wide},
                 c_point{center.x,center.y-cell_wide},
@@ -123,7 +135,7 @@ namespace A_star{
                     or ops[i].y < 0
                     or ops[i].y >= Public::base.h()
                     or get_color(ops[i]).r+get_color(ops[i]).g+get_color(ops[i]).b == 255*3) continue;
-                c_point_comp cops = c_point_comp{center, ops[i], get_cost(ops[i], ptr, center, cell_wide)+cost};
+                c_point_comp cops = c_point_comp{center, ops[i], get_cost(center, ops[i], ptr, cell_wide)+cost};
                 if(close.find(cops) == close.end()){
                     open.insert(cops);
                 }
