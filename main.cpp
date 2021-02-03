@@ -32,8 +32,9 @@ void prepare_data(){
         if(Public::city_points.back().population <= 0) Public::city_points.pop_back();
     }
 
-    std::sort(Public::city_points.begin(),Public::city_points.end(),
-        [](Public::city_info a, Public::city_info b){ return a.population > b.population; });
+    auto city_sort_func = [](Public::city_info a, Public::city_info b){ return a.population > b.population; };
+
+    std::sort(Public::city_points.begin(),Public::city_points.end(),city_sort_func);
 
     Public::max_city_range = Public::city_range_f(Public::city_points[0].population);
 
@@ -45,7 +46,20 @@ void prepare_data(){
         Dbscan::cluster(Public::rdata, Public::city_points, i, -1);
     }
 
-    //std::cout<<Public::max_city_range<<std::endl;
+    for(int i=0; i<Public::city_points.size(); i++){
+        if(Public::city_points[i].class_num < 0) continue;
+        while(Public::city_points[i].class_num >= Public::city_points_class.size()){
+            Public::city_points_class.push_back({});
+        }
+        Public::city_points_class[Public::city_points[i].class_num].push_back(i);
+    }
+
+    for(int i=0; i<Public::city_points_class.size(); i++){
+        std::sort(Public::city_points_class[i].begin(),Public::city_points_class[i].end(),[&](int a, int b){
+            return Public::city_points[a].population > Public::city_points[b].population;
+        });
+        std::cout<<Public::city_points[Public::city_points_class[i][0]].name<<std::endl;
+    }
 }
 
 double debug_path(std::string str, std::string end, double cell_wide){
@@ -58,16 +72,10 @@ int main(){
     Public::base.open_file(map_name);
     prepare_data();
 
-    debug_path("Sapporo","Asahikawa", 5.0);
-    debug_path("Wakkanai","Asahikawa", 5.0);
-    debug_path("Kitami","Asahikawa", 5.0);
-    
-    //std::cout<<A_star::a_star_search(path_cont, get_city_location("Sapporo"), get_city_location("Asahikawa"), 10.0)<<std::endl;
-    //std::cout<<A_star::a_star_search(path_cont, get_city_location("Asahikawa"), get_city_location("Obihiro"), 1.0)<<std::endl;
-    //std::cout<<A_star::a_star_search(path_cont, get_city_location("Sapporo"), get_city_location("Hakodate"), 2.0)<<std::endl;
-    //std::cout<<A_star::a_star_search(path_cont, get_city_location("Ebetsu"), get_city_location("Hurano"), 1.0)<<std::endl;
-    //std::cout<<A_star::a_star_search(path_cont, get_city_location("Tomakomai"), get_city_location("Obihiro"), 3.0)<<std::endl;
-    
+    debug_path("Sapporo","Asahikawa", 10.0);
+    debug_path("Wakkanai","Asahikawa", 10.0);
+    //debug_path("Kitami","Asahikawa", 5.0);
+    debug_path("Obihiro","Asahikawa", 10.0);
 
     Public::picker.set_default_size(Public::base.w()*Public::pixel_adj, Public::base.h()*Public::pixel_adj);
     Public::picker.set_loop(10);

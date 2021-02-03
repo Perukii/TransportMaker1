@@ -71,7 +71,7 @@ namespace A_star{
         
 
 
-        double result = (1.0+dist+(1.0-get_color(pto).g/255.0)*Public::height_weight+(city_pass*Public::city_pass_weight))*euc(pfrom,pto)*euc(pfrom,pfor);
+        double result = (1+dist+(1.0-get_color(pto).g/255.0)*Public::height_weight+(city_pass*Public::city_pass_weight))*euc(pfrom,pto)*euc(pfrom,pfor);
         return result*cell_wide;
     }
 

@@ -6,9 +6,9 @@ namespace Public{
 
     const double hundred_km_to_pixel = 900; 
     const double city_range_size = 0.10; // 1.0 -> 100km
-    const double height_diff_weight_up = 4.5;
-    const double height_diff_weight_down = 4.5;
-    const double height_weight = 1.0;
+    const double height_diff_weight_up = 1.5;
+    const double height_diff_weight_down = 1.5;
+    const double height_weight = 2.0;
     const double city_pass_weight = 3.0;
 
     double city_scale_f(double population){
@@ -37,6 +37,8 @@ namespace Public{
 
     using city_info_cont = std::vector<city_info>;
     using r_tree = RTree<int, double, 2, double>;
+
+    std::vector<std::vector<int>> city_points_class;
 
     city_info_cont city_points;
     r_tree rdata;
