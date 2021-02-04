@@ -50,7 +50,7 @@ namespace A_star{
         return std::sqrt(std::pow(pfrom.x-pto.x,2)+std::pow(pfrom.y-pto.y,2));
     }
 
-    double get_cost(c_point pfrom, c_point pto, c_point pfor, double cell_wide){
+    double get_cost(c_point pfrom, c_point pto, c_point pfor, double cell_width){
         double cdist = get_color(pfrom).g-get_color(pto).g;
         double dist = std::abs(cdist)*(cdist < 0 ? Public::height_diff_weight_up : Public::height_diff_weight_down);
 
@@ -72,11 +72,11 @@ namespace A_star{
 
 
         double result = (1+dist+(1.0-get_color(pto).g/255.0)*Public::height_weight+(city_pass*Public::city_pass_weight))*euc(pfrom,pto)*euc(pfrom,pfor);
-        return result*cell_wide;
+        return result*cell_width;
     }
 
-    double a_star_search(path_container& path, c_point pst, c_point ptr, double cell_wide){
-            
+    double a_star_search(path_container* path_ptr, c_point pst, c_point ptr, double cell_width){
+
         std::set<c_point_comp> open;
         std::set<c_point_comp> close;
         open.insert(c_point_comp{pst, pst, 0});
@@ -113,20 +113,21 @@ namespace A_star{
 
             open.erase(*center_ptr);
 
-            if(euc(center, ptr) <= cell_wide){
-                break;
+            if(euc(center, ptr) <= cell_width){
+                cell_width = euc(center, ptr)*0.5;
+                if(cell_width < 1.0) break;
             }
 
 
             c_point ops[]={
-                c_point{center.x,center.y+cell_wide},
-                c_point{center.x,center.y-cell_wide},
-                c_point{center.x-cell_wide,center.y},
-                c_point{center.x+cell_wide,center.y},
-                c_point{center.x-cell_wide,center.y-cell_wide},
-                c_point{center.x-cell_wide,center.y+cell_wide},
-                c_point{center.x+cell_wide,center.y-cell_wide},
-                c_point{center.x+cell_wide,center.y+cell_wide}
+                c_point{center.x,center.y+cell_width},
+                c_point{center.x,center.y-cell_width},
+                c_point{center.x-cell_width,center.y},
+                c_point{center.x+cell_width,center.y},
+                c_point{center.x-cell_width,center.y-cell_width},
+                c_point{center.x-cell_width,center.y+cell_width},
+                c_point{center.x+cell_width,center.y-cell_width},
+                c_point{center.x+cell_width,center.y+cell_width}
             };
 
             for(int i=0;i<8;i++){
@@ -134,8 +135,9 @@ namespace A_star{
                     or ops[i].x >= Public::base.w()
                     or ops[i].y < 0
                     or ops[i].y >= Public::base.h()
-                    or get_color(ops[i]).r+get_color(ops[i]).g+get_color(ops[i]).b == 255*3) continue;
-                c_point_comp cops = c_point_comp{center, ops[i], get_cost(center, ops[i], ptr, cell_wide)+cost};
+                    or get_color(ops[i]).r+get_color(ops[i]).g+get_color(ops[i]).b == 255*3
+                    or get_color(ops[i]).r+get_color(ops[i]).g+get_color(ops[i]).b == 0) continue;
+                c_point_comp cops = c_point_comp{center, ops[i], get_cost(center, ops[i], ptr, cell_width)+cost};
                 if(close.find(cops) == close.end()){
                     open.insert(cops);
                 }
@@ -143,12 +145,16 @@ namespace A_star{
 
         }
 
+        if(path_ptr == NULL) return cost; 
+
+        path_container& path = *path_ptr;
+
         auto pathmark = close.find({{0,0},center,0});
         if(pathmark == close.end())return -1;
 
         path.push_back({});
         
-        while(!(pathmark->point == pst) ){
+        while(!(pathmark->point == pathmark->parent) ){
             path[path.size()-1].push_back(pathmark->point);
             pathmark = close.find({pathmark->parent,pathmark->parent,0});
         }

@@ -68,7 +68,7 @@ void func(Capr::Cairo_cont cr){
         }
     }
 
-    cr->set_line_width(1);
+    cr->set_line_width(2);
     cr->set_source_rgb(1.0,0.2,0.2);
     cr->stroke();
 
